@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { orderBy, query, addDoc, collection, serverTimestamp, onSnapshot } from "firebase/firestore";
 import { dbService } from "../myBase";
+import Rweets from "../components/Rweets"
 
 const Home = ({ userObj }) => {
+  
     const [ rweet, setRweet ] = useState("");
     const [ rweets, setRweets ] = useState([]);
+
+
 
     useEffect(()=>{
         const q = query(collection(dbService, "rweets"),
@@ -16,6 +20,7 @@ const Home = ({ userObj }) => {
                 id : doc.id,
                 ...doc.data(),
             }));
+            console.log(rweetArr);
             setRweets(rweetArr);
             
         });
@@ -49,11 +54,13 @@ const Home = ({ userObj }) => {
                 <input type="submit" value="rweet"/>
             </form>
             <div>
-                {rweets.map(e => 
-                    <div key={e.id}>
-                        <h4>{ e.text }</h4>
-                    </div>
-                )}
+                {rweets.map(e => (
+                    <Rweets 
+                        key = {e.id} 
+                        rweetObj={e} 
+                        isOwner = { e.creatorId === userObj.uid } 
+                    /> 
+                ))}
             </div>
         </div>
     );
