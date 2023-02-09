@@ -31,7 +31,7 @@ const Rweets = ({ rweetObj, isOwner }) => {
     return (
         <div>
             {
-                editing ?
+                editing && isOwner ?
                     <>
                         <form onSubmit={ onSubmit }>
                             <input 
