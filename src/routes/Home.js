@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { orderBy, query, addDoc, collection, serverTimestamp, onSnapshot } from "firebase/firestore";
-import { dbService } from "../myBase";
+import { dbService, storageService } from "../myBase";
+import { v4 } from "uuid";
 import Rweets from "../components/Rweets"
+import { ref, uploadString, getDownloadURL } from "@firebase/storage";
 
 const Home = ({ userObj }) => {
   
     const [ rweet, setRweet ] = useState("");
     const [ rweets, setRweets ] = useState([]);
-    const [ attachment , setAttachment ] = useState();
+    const [ attachment , setAttachment ] = useState("");
 
 
     useEffect(()=>{
@@ -20,7 +22,6 @@ const Home = ({ userObj }) => {
                 id : doc.id,
                 ...doc.data(),
             }));
-            console.log(rweetArr);
             setRweets(rweetArr);
             
         });
@@ -28,13 +29,23 @@ const Home = ({ userObj }) => {
 
     const onSubmit = async(e) =>{
         e.preventDefault();
-        await addDoc(collection(dbService, "rweets"), { 
+        let attachmentUrl = "";
+        if(attachment != ""){
+            const attachmentRef = ref(storageService, `${userObj.uid}/${v4()}`);
+            const response = await uploadString(attachmentRef, attachment, "data_url");
+            attachmentUrl = await getDownloadURL(response.ref);
+        }
+        const rweetObj = {
             text : rweet,
             createdAt: serverTimestamp(),
             creatorId : userObj.uid,
-        });
+            attachmentUrl
+        }
+        await addDoc(collection(dbService, "rweets"), rweetObj);
+        setAttachment("");
         setRweet("");
     }
+
     const onChange = (e) =>{
         const { value } = e.target;
         setRweet(value);
@@ -51,7 +62,7 @@ const Home = ({ userObj }) => {
         reader.readAsDataURL(theFile);
     }
 
-    const onClearPhoto = () => setAttachment(null);
+    const onClearPhoto = () => setAttachment("");
 
     return(
         <div>

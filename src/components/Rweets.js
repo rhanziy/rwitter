@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { dbService } from "../myBase";
+import { dbService, storageService } from "../myBase";
 import { doc, deleteDoc, updateDoc } from "firebase/firestore"
-import { async } from "@firebase/util";
+import { deleteObject, ref } from "firebase/storage";
+
 
 
 const Rweets = ({ rweetObj, isOwner }) => {
@@ -11,8 +12,12 @@ const Rweets = ({ rweetObj, isOwner }) => {
 
     const onDeleteClick = async () => {
         const ok = window.confirm("Are you sure you want to delete this rweet?");
+        const urlRef = ref(storageService, rweetObj.attachmentUrl);
         if (ok) {
             await deleteDoc(RweetTextRef);
+            if(rweetObj.attachmentUrl !== ""){
+                await deleteObject(urlRef);
+            }
         }
     }
 
@@ -47,6 +52,7 @@ const Rweets = ({ rweetObj, isOwner }) => {
                     </>
                     : <>
                         <h4>{rweetObj.text}</h4>
+                        { rweetObj.attachmentUrl && <img src={ rweetObj.attachmentUrl } width="50px" height="50px" />}
                         {
                             isOwner && (
                                 <>
